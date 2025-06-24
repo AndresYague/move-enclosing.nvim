@@ -26,9 +26,6 @@ Install it like any other plugin. For example, if using `LazyVim` as your packag
     opts = {
       keymap = "<C-E>",
     },
-    config = function(_, opts)
-      require("move-enclosing").setup(opts)
-    end,
   },
 ```
 
