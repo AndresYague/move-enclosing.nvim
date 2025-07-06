@@ -205,6 +205,7 @@ M.setup = function(opts)
   map(opts.WORD_keymap, move_closing, true)
 end
 
+M._is_balanced_pair = is_balanced_pair
 M._is_balanced = is_balanced
 M._find_next = find_next
 M._move_match = move_match
