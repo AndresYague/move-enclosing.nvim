@@ -22,19 +22,20 @@ Install it like any other plugin. For example, if using `LazyVim` as your packag
 
 ```lua
   {
-    "AndresYague/MoveEnclosing.nvim",
+    'AndresYague/MoveEnclosing.nvim',
     opts = {
-      keymap = "<C-E>",
+      word_keymap = '<C-E>', -- Move enclosing to the end of next word
+      WORD_keymap = '<C-S-E>', -- Move enclosing to the end of next WORD
     },
   },
 ```
 
 ## Configuration
 
-Right now only the `keymap` can be configured. This must be an entry in a table passed to `setup`. Such as:
+Right now only the `word_keymap` and `WORD_keymap` can be configured. This must be an entry in a table passed to `setup`. Such as:
 
 ```lua
-require("move-enclosing").setup({keymap = "<C-E>"})
+require('move-enclosing').setup({word_keymap = '<C-E>', WORD_keymap = '<C-S-E>'})
 ```
 
 ## Inspiration

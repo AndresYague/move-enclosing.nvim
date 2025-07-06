@@ -107,19 +107,26 @@ end
 -- For example, if moving parens do ()here -> (here)
 ---@param line string
 ---@param position integer
+---@param find_space boolean
 ---@return boolean
-local move_match = function(line, position)
+local move_match = function(line, position, find_space)
+  local next_punctuation = nil
+  local next_word = nil
+
   -- Find the last thing before a space after the closing parenthesis
   local next_space = string.find(line, "%S%s", position + 1)
     or string.find(line, "%S$", position + 1)
 
-  -- Find the last thing before a space after the closing parenthesis
-  local next_punctuation = string.find(line, "%p", position + 1)
-    or string.find(line, "%p$", position + 1)
+  if not find_space then
+    -- Find the next punctuation
+    next_punctuation = string.find(line, "%p", position + 1)
+      or string.find(line, "%p$", position + 1)
 
-  -- Find the end of the next word
-  local next_word = string.find(line, "%w%W", position + 1)
-    or string.find(line, "%w$", position + 1)
+    -- Find the end of the next word
+    print("finding word!")
+    next_word = string.find(line, "%w%W", position + 1)
+      or string.find(line, "%w$", position + 1)
+  end
 
   -- Exit if next_space is nil
   if not next_space then
@@ -158,7 +165,8 @@ local move_match = function(line, position)
 end
 
 -- Pattern match different types of closing pair and move them
-local move_closing = function()
+---@param find_space boolean
+local move_closing = function(find_space)
   local line = vim.api.nvim_get_current_line()
   local col = vim.api.nvim_win_get_cursor(0)[2] -- x-axis of cursor
 
@@ -171,7 +179,7 @@ local move_closing = function()
     end
 
     -- Otherwise try to move it
-    if move_match(line, pos) then
+    if move_match(line, pos, find_space) then
       break
     end
 
@@ -180,21 +188,22 @@ local move_closing = function()
 end
 
 ---@param rhs string
-local map = function(rhs)
-  vim.keymap.set(
-    { "n", "i" },
-    rhs,
-    move_closing,
-    { desc = "Move parenthesis around next word" }
-  )
+---@param callable function
+---@param find_space boolean
+local map = function(rhs, callable, find_space)
+  vim.keymap.set({ "n", "i" }, rhs, function()
+    callable(find_space)
+  end, { desc = "Move parenthesis around next word" })
 end
 
 ---@param opts table?
 M.setup = function(opts)
   opts = opts or {}
-  opts.keymap = opts.keymap or "<C-E>"
+  opts.word_keymap = opts.word_keymap or "<C-E>"
+  opts.WORD_keymap = opts.WORD_keymap or "<C-S-E>"
 
-  map(opts.keymap)
+  map(opts.word_keymap, move_closing, false)
+  map(opts.WORD_keymap, move_closing, true)
 end
 
 return M
