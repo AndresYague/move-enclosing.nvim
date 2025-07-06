@@ -123,7 +123,6 @@ local move_match = function(line, position, find_space)
       or string.find(line, "%p$", position + 1)
 
     -- Find the end of the next word
-    print("finding word!")
     next_word = string.find(line, "%w%W", position + 1)
       or string.find(line, "%w$", position + 1)
   end
@@ -205,5 +204,9 @@ M.setup = function(opts)
   map(opts.word_keymap, move_closing, false)
   map(opts.WORD_keymap, move_closing, true)
 end
+
+M._is_balanced = is_balanced
+M._find_next = find_next
+M._move_match = move_match
 
 return M
