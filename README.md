@@ -12,9 +12,13 @@ Another example is (cursor inside of the brackets):
 
     []lorem(()) ipsum -> [lorem](()) ipsum -> [lorem(())] ipsum -> [lorem(()) ipsum]
 
-Right now, the pair moves to the end of a vim `word`, therefore
+The pair moves to the end of a vim `word`, when using `word_keymap`
 
     ()lorem_ ipsum -> (lorem)_ ipsum -> (lorem_) ipsum -> (lorem_ ipsum)
+
+And to the end of a vim `WORD` when using `WORD_keymap`
+
+    ()lorem_ ipsum -> (lorem_) ipsum -> (lorem_ ipsum)
 
 ## Installation
 
