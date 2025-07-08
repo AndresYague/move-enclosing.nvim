@@ -15,9 +15,12 @@ describe("move-enclosing.is_balanced_pair", function()
   it("Should find a balanced line balanced for symmetric braces", function()
     assert.are.same(true, is_balanced_pair("'lorem' ipsum", "'", "'"))
   end)
-  it("Should not find a balanced line balanced for asymmetric braces", function()
-    assert.are.same(false, is_balanced_pair("[lorem][ ipsum", "[", "]"))
-  end)
+  it(
+    "Should not find a balanced line balanced for asymmetric braces",
+    function()
+      assert.are.same(false, is_balanced_pair("[lorem][ ipsum", "[", "]"))
+    end
+  )
   it("Should not find a balanced line balanced for symmetric braces", function()
     assert.are.same(false, is_balanced_pair("'lorem' 'ipsum", "'", "'"))
   end)

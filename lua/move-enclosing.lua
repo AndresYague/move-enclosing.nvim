@@ -43,6 +43,8 @@ local is_balanced_pair = function(str, open, close)
       balance = balance - 1
     end
 
+    -- Saw more closing strings than opening strings,
+    -- we can exit already
     if balance < 0 then
       return false
     end
@@ -103,7 +105,7 @@ local find_next = function(str, cursor, start)
   end
 end
 
--- Move match with to encompass next word
+-- Move match to encompass next word
 -- For example, if moving parens do ()here -> (here)
 ---@param line string
 ---@param position integer
@@ -114,6 +116,7 @@ local move_match = function(line, position, find_space)
   local next_word = nil
 
   -- Find the last thing before a space after the closing parenthesis
+  -- Otherwise find the end of the line
   local next_space = string.find(line, "%S%s", position + 1)
     or string.find(line, "%S$", position + 1)
 
@@ -133,6 +136,7 @@ local move_match = function(line, position, find_space)
   end
 
   -- At minimum, we are going to the "next space"
+  -- which includes the end of the line
   local position_bracket = next_space
 
   -- Check if next_punctuation or next_word comes before
@@ -172,12 +176,12 @@ local move_closing = function(find_space)
   -- Find next match
   for i = col + 1, string.len(line) do
     local pos = find_next(line, col, i)
-    -- If there is no match, continue to the next loop
+    -- If there is no match, continue to the next iteration
     if not pos then
       goto continue
     end
 
-    -- Otherwise try to move it
+    -- Otherwise try to move it the match. If it was moved, exit.
     if move_match(line, pos, find_space) then
       break
     end
@@ -189,10 +193,11 @@ end
 ---@param rhs string
 ---@param callable function
 ---@param find_space boolean
-local map = function(rhs, callable, find_space)
+---@param description string
+local map = function(rhs, callable, find_space, description)
   vim.keymap.set({ "n", "i" }, rhs, function()
     callable(find_space)
-  end, { desc = "Move parenthesis around next word" })
+  end, { desc = "Move parenthesis around next " .. description })
 end
 
 ---@param opts table?
@@ -201,8 +206,8 @@ M.setup = function(opts)
   opts.word_keymap = opts.word_keymap or "<C-E>"
   opts.WORD_keymap = opts.WORD_keymap or "<C-S-E>"
 
-  map(opts.word_keymap, move_closing, false)
-  map(opts.WORD_keymap, move_closing, true)
+  map(opts.word_keymap, move_closing, false, "word")
+  map(opts.WORD_keymap, move_closing, true, "WORD")
 end
 
 M._is_balanced_pair = is_balanced_pair
