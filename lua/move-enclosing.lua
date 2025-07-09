@@ -105,13 +105,12 @@ local find_next = function(str, cursor, start)
   end
 end
 
--- Move match to encompass next word
--- For example, if moving parens do ()here -> (here)
+-- Find the next position we would try to move the match
 ---@param line string
 ---@param position integer
 ---@param find_space boolean
----@return boolean
-local move_match = function(line, position, find_space)
+---@return integer?
+local next_position = function(line, position, find_space)
   local next_punctuation = nil
   local next_word = nil
 
@@ -132,7 +131,7 @@ local move_match = function(line, position, find_space)
 
   -- Exit if next_space is nil
   if not next_space then
-    return false
+    return nil
   end
 
   -- At minimum, we are going to the "next space"
@@ -153,18 +152,42 @@ local move_match = function(line, position, find_space)
   -- If position_bracket is in the original space, try to move it one space
   -- over to start with
   position_bracket = math.max(position_bracket, position + 1)
-  for i = position_bracket, string.len(line) do
-    -- New line with moved closing bracket
-    local new_line = move_char(line, position, i)
 
-    -- Check if new line is balanced, if so, write line
-    if is_balanced(string.sub(new_line, position, i - 1)) then
-      vim.api.nvim_set_current_line(new_line)
-      return true
+  return position_bracket
+end
+
+-- Move match to encompass next word
+-- For example, if moving parens do ()here -> (here)
+---@param line string
+---@param position integer
+---@param find_space boolean
+---@return integer?
+local move_match = function(line, position, find_space)
+  -- Start looking from "position"
+  local from = position
+  while true do
+    local position_bracket = next_position(line, from, find_space)
+
+    -- If nil, exit
+    if not position_bracket then
+      break
     end
+
+    local new_line = move_char(line, position, position_bracket)
+
+    if is_balanced(string.sub(new_line, position, position_bracket - 1)) then
+      vim.api.nvim_set_current_line(new_line)
+      return position_bracket
+    end
+
+    if from == position_bracket then
+      break
+    end
+
+    from = position_bracket
   end
 
-  return false
+  return nil
 end
 
 -- Pattern match different types of closing pair and move them
