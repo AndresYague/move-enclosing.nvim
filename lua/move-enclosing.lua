@@ -146,9 +146,6 @@ local next_position = function(line, position, find_space)
     position_bracket = math.min(next_word, position_bracket)
   end
 
-  -- Put it in position_bracket unless making the inner string unbalanced
-  -- If stopped because of making an unbalanced string, keep moving until the
-  -- string is balanced again
   -- If position_bracket is in the original space, try to move it one space
   -- over to start with
   position_bracket = math.max(position_bracket, position + 1)
@@ -165,21 +162,73 @@ end
 local move_match = function(line, position, find_space)
   -- Start looking from "position"
   local from = position
+
+  -- Simple local function to try and rewrite the line (only
+  -- if string is balanced). This avoids repetition below
+  ---@param rewrite_to integer
+  ---@return boolean
+  local rewrite_line = function(rewrite_to)
+    local new_line = move_char(line, position, rewrite_to)
+
+    -- Put it in position_bracket unless making the inner string unbalanced
+    if is_balanced(string.sub(new_line, position, rewrite_to - 1)) then
+      vim.api.nvim_set_current_line(new_line)
+      return true
+    end
+
+    return false
+  end
+
+  -- If stopped because of making an unbalanced string, keep moving until
+  -- the string is balanced again
   while true do
     local position_bracket = next_position(line, from, find_space)
 
-    -- If nil, exit
-    if not position_bracket then
-      break
+    if find_space then
+      -- If we are finding space, we may need to adjust position_bracket
+      if position_bracket then
+        -- If position_bracket found, just try to mvoe the closing
+        -- string there, normally
+        local was_moved = rewrite_line(position_bracket)
+        if was_moved then
+          return position_bracket
+        end
+      else
+        -- If it was not found, move from the end of the string until
+        -- we find a place we can put it in
+        local new_position = string.len(line)
+        while new_position > position do
+          local was_moved = rewrite_line(new_position)
+          if was_moved then
+            return new_position
+          end
+
+          new_position = new_position - 1
+        end
+
+        -- If the new_position was not found, then break
+        -- so it can return nil
+        break
+      end
+    else
+      -- If we are not finding space, then try to position the bracket
+      -- only once
+
+      -- If nil, exit
+      if not position_bracket then
+        break
+      end
+
+      -- If we managed to move the closing string, we can
+      -- return the position, otherwise continue cycling
+      local was_moved = rewrite_line(position_bracket)
+      if was_moved then
+        return position_bracket
+      end
     end
 
-    local new_line = move_char(line, position, position_bracket)
-
-    if is_balanced(string.sub(new_line, position, position_bracket - 1)) then
-      vim.api.nvim_set_current_line(new_line)
-      return position_bracket
-    end
-
+    -- In this case we have nowhere else to move,
+    -- so we can exit here
     if from == position_bracket then
       break
     end

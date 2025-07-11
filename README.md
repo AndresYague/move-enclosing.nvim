@@ -20,13 +20,17 @@ And to the end of a vim `WORD` when using `WORD_keymap`
 
     ()lorem_ ipsum -> (lorem_) ipsum -> (lorem_ ipsum)
 
+If the end of a vim `WORD` is the end of the string and would leave the string unbalanced, then keep walking back until a suitable place is found
+
+    [()lorem_] -> [(lorem_)]
+
 ## Installation
 
 Install it like any other plugin. For example, if using `LazyVim` as your package manager:
 
 ```lua
   {
-    'AndresYague/MoveEnclosing.nvim',
+    'AndresYague/move-enclosing.nvim',
     opts = {
       word_keymap = '<C-E>', -- Move enclosing to the end of next word
       WORD_keymap = '<C-S-E>', -- Move enclosing to the end of next WORD
