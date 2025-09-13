@@ -5,8 +5,10 @@ local reverse_bracket = {}
 reverse_bracket[")"] = "("
 reverse_bracket["]"] = "["
 reverse_bracket["}"] = "{"
+reverse_bracket[">"] = "<"
 reverse_bracket['"'] = '"'
 reverse_bracket["'"] = "'"
+reverse_bracket['`'] = '`'
 
 -- Move character in "from" to "to"
 ---@param str string
@@ -66,10 +68,16 @@ local is_balanced = function(str)
   if not is_balanced_pair(str, "{", "}") then
     return false
   end
+  if not is_balanced_pair(str, "<", ">") then
+    return false
+  end
   if not is_balanced_pair(str, "'", "'") then
     return false
   end
   if not is_balanced_pair(str, '"', '"') then
+    return false
+  end
+  if not is_balanced_pair(str, "`", "`") then
     return false
   end
 
@@ -84,7 +92,7 @@ end
 local find_next = function(str, cursor, start)
   for i = start, string.len(str) do
     -- Find the next match
-    local position, _, match = string.find(str, "([])}\"'])", i)
+    local position, _, match = string.find(str, "([])}>`\"'])", i)
 
     -- See if there is an unbalanced string between the cursor
     -- and the match
