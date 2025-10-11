@@ -10,10 +10,10 @@ reverse_bracket['"'] = '"'
 reverse_bracket["'"] = "'"
 reverse_bracket['`'] = '`'
 
--- Move character in "from" to "to"
----@param str string
----@param from integer
----@param to integer
+---Move character in "from" to "to"
+---@param str string String to move characters in
+---@param from integer Move character from here
+---@param to integer Move character here (current index)
 ---@return string
 local move_char = function(str, from, to)
   local str_split = string.sub(str, 1, from - 1)
@@ -24,10 +24,10 @@ local move_char = function(str, from, to)
   return str_split
 end
 
--- Return true if specific open and close strings are balanced
----@param str string
----@param open string
----@param close string
+---Return true if specific open and close strings are balanced
+---@param str string String in which to check balance
+---@param open string "open" character
+---@param close string "close" character
 ---@return boolean
 local is_balanced_pair = function(str, open, close)
   local balance = 0
@@ -55,8 +55,8 @@ local is_balanced_pair = function(str, open, close)
   return balance == 0
 end
 
---Return true if substring is balanced
----@param str string
+---Return true if substring is balanced
+---@param str string String to check
 ---@return boolean
 local is_balanced = function(str)
   if not is_balanced_pair(str, "(", ")") then
@@ -84,10 +84,10 @@ local is_balanced = function(str)
   return true
 end
 
--- Find the next closing match from "start"
----@param str string
----@param cursor integer
----@param start integer
+---Find the next closing match from "start"
+---@param str string String in which to search closing match
+---@param cursor integer Current cursor position
+---@param start integer Where to start the search from
 ---@return integer?
 local find_next = function(str, cursor, start)
   for i = start, string.len(str) do
@@ -113,10 +113,10 @@ local find_next = function(str, cursor, start)
   end
 end
 
--- Find the next position we would try to move the match
----@param line string
----@param position integer
----@param find_space boolean
+---Find the next position we would try to move the match
+---@param line string String to find the position in
+---@param position integer Current position (finding the next one)
+---@param find_space boolean Try to find next space instead of next non-word character
 ---@return integer?
 local next_position = function(line, position, find_space)
   local next_punctuation = nil
@@ -161,11 +161,11 @@ local next_position = function(line, position, find_space)
   return position_bracket
 end
 
--- Move match to encompass next word
--- For example, if moving parens do ()here -> (here)
----@param line string
----@param position integer
----@param find_space boolean
+---Move match to encompass next word
+---For example, if moving parens do ()here -> (here)
+---@param line string String to modify
+---@param position integer Where to start looking for new position of closing
+---@param find_space boolean Find space instead of next non-word character
 ---@return integer?
 local move_match = function(line, position, find_space)
   -- Start looking from "position"
@@ -247,8 +247,8 @@ local move_match = function(line, position, find_space)
   return nil
 end
 
--- Pattern match different types of closing pair and move them
----@param find_space boolean
+---Pattern match different types of closing pair and move them
+---@param find_space boolean Find space instead of next non-word character
 local move_closing = function(find_space)
   local line = vim.api.nvim_get_current_line()
   local col = vim.api.nvim_win_get_cursor(0)[2] -- x-axis of cursor
@@ -270,17 +270,17 @@ local move_closing = function(find_space)
   end
 end
 
----@param rhs string
----@param callable function
----@param find_space boolean
----@param description string
+---@param rhs string Keybind
+---@param callable function callable(find_space: boolean)
+---@param find_space boolean Find space instead of next non-word character
+---@param description string Description of what the map does
 local map = function(rhs, callable, find_space, description)
   vim.keymap.set({ "n", "i" }, rhs, function()
     callable(find_space)
   end, { desc = "Move parenthesis around next " .. description })
 end
 
----@param opts table?
+---@param opts table? Optional configuration table
 M.setup = function(opts)
   opts = opts or {}
   opts.word_keymap = opts.word_keymap or "<C-E>"
