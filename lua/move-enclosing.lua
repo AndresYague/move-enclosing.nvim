@@ -270,12 +270,12 @@ local move_closing = function(find_space)
   end
 end
 
----@param rhs string Keybind
+---@param lhs string Keybind
 ---@param callable function callable(find_space: boolean)
 ---@param find_space boolean Find space instead of next non-word character
 ---@param description string Description of what the map does
-local map = function(rhs, callable, find_space, description)
-  vim.keymap.set({ "n", "i" }, rhs, function()
+local map = function(lhs, callable, find_space, description)
+  vim.keymap.set({ "n", "i" }, lhs, function()
     callable(find_space)
   end, { desc = "Move parenthesis around next " .. description })
 end
