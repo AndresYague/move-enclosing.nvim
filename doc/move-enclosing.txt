@@ -1,0 +1,72 @@
+*move-enclosing.txt*                            Last change: 2025 diciembre 28
+
+==============================================================================
+Table of Contents                      *move-enclosing.nvim-table-of-contents*
+
+Installation .............................. |move-enclosing.nvim-installation|
+Configuration ............................ |move-enclosing.nvim-configuration|
+Inspiration ................................ |move-enclosing.nvim-inspiration|
+
+==============================================================================
+MOVE-ENCLOSING.NVIM                  *move-enclosing.nvim-move-enclosing.nvim*
+
+
+Simple plugin that allows to move enclosing pairs around the next word. For
+example, with the cursor inside of the parenthesis in `()lorem ipsum` and
+pressing the mapped keyword, default `<C-E>`, makes the following change to
+the text:
+
+Pairs are moved from inside out, but they are never moved to a place that
+would make other pairs unbalanced, so for example, with the cursor inside of
+the parenthesis in `[()lorem] ipsum` and pressing the mapped keyword 3
+consecutive times, makes the change:
+
+Another example is (cursor inside of the brackets):
+
+The pair moves to the end of a vim `word`, when using `word_keymap`
+
+And to the end of a vim `WORD` when using `WORD_keymap`
+
+If the end of a vim `WORD` is the end of the string and would leave the string
+unbalanced, then keep walking back until a suitable place is found
+
+
+------------------------------------------------------------------------------
+INSTALLATION                                *move-enclosing.nvim-installation*
+
+
+Install it like any other plugin. For example, if using `LazyVim` as your
+package manager:
+
+>lua
+      {
+        'AndresYague/move-enclosing.nvim',
+        opts = {
+          word_keymap = '<C-E>', -- Move enclosing to the end of next word
+          WORD_keymap = '<C-S-E>', -- Move enclosing to the end of next WORD
+        },
+      }
+<
+
+------------------------------------------------------------------------------
+CONFIGURATION                              *move-enclosing.nvim-configuration*
+
+
+Right now only `word_keymap` and `WORD_keymap` can be configured. This must be
+an entry in a table passed to `setup`. Such as:
+
+>lua
+      require('print-debug').setup {
+        word_keymap = '<C-E>',
+        WORD_keymap = '<C-S-E>',
+      }
+<
+
+------------------------------------------------------------------------------
+INSPIRATION                                  *move-enclosing.nvim-inspiration*
+
+
+This plugin is inspired by https://github.com/jiangmiao/auto-pairs.git
+
+
+vim:tw=78:ts=8:ft=help:norl:

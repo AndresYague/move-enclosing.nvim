@@ -40,7 +40,7 @@ Install it like any other plugin. For example, if using `LazyVim` as your packag
 
 ## Configuration
 
-Right now only the `word_keymap` and `WORD_keymap` can be configured. This must be an entry in a table passed to `setup`. Such as:
+Right now only `word_keymap` and `WORD_keymap` can be configured. This must be an entry in a table passed to `setup`. Such as:
 
 ```lua
   require('print-debug').setup {
