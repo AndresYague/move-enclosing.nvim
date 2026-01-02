@@ -320,16 +320,22 @@ end
 ---@param description string Description of what the map does
 local map = function(lhs, callable, find_space, description)
   vim.keymap.set({ "n", "i" }, lhs, function()
-    if find_space then
+    if
+      find_space
+      or not M.use_ts
+      or not vim.treesitter.language.add(vim.bo.filetype)
+    then
       callable(find_space)
     else
-      if vim.treesitter.language.add(vim.bo.filetype) then
-        move_closing_ts()
-      else
-        callable(false)
-      end
+      move_closing_ts()
     end
   end, { desc = "Move parenthesis around next " .. description })
+end
+
+---Toggle whether to use or not treesitter for move-enclosing
+---@return nil
+M.toggle_ts = function()
+  M.use_ts = not M.use_ts
 end
 
 ---@param opts table? Optional configuration table
@@ -337,6 +343,10 @@ M.setup = function(opts)
   opts = opts or {}
   opts.word_keymap = opts.word_keymap or "<C-E>"
   opts.WORD_keymap = opts.WORD_keymap or "<C-S-E>"
+  M.use_ts = opts.use_ts
+  if M.use_ts == nil then
+    M.use_ts = true
+  end
 
   map(opts.word_keymap, move_closing, false, "word")
   map(opts.WORD_keymap, move_closing, true, "WORD")
