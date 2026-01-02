@@ -268,6 +268,13 @@ local move_closing_ts = function()
       return nil
     end
 
+    -- Make sure that we do not try to write a character at the end of
+    -- the document
+    local final_row = vim.api.nvim_buf_line_count(0)
+    if row == final_row then
+      return nil
+    end
+
     -- Rewrite lines by removing the end character from
     -- the pair and setting it in the new place
     local char_to_move = line:sub(pos, pos)
