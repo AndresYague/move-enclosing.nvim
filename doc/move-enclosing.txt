@@ -1,14 +1,20 @@
-*move-enclosing.txt*                            Last change: 2025 diciembre 28
+*move-enclosing.txt*                                Last change: 2026 enero 01
 
 ==============================================================================
 Table of Contents                      *move-enclosing.nvim-table-of-contents*
 
+Description ................................ |move-enclosing.nvim-description|
+Treesitter .................................. |move-enclosing.nvim-treesitter|
 Installation .............................. |move-enclosing.nvim-installation|
-Configuration ............................ |move-enclosing.nvim-configuration|
 Inspiration ................................ |move-enclosing.nvim-inspiration|
 
 ==============================================================================
 MOVE-ENCLOSING.NVIM                  *move-enclosing.nvim-move-enclosing.nvim*
+
+
+
+------------------------------------------------------------------------------
+DESCRIPTION                                  *move-enclosing.nvim-description*
 
 
 Simple plugin that allows to move enclosing pairs around the next word. For
@@ -32,6 +38,17 @@ unbalanced, then keep walking back until a suitable place is found
 
 
 ------------------------------------------------------------------------------
+TREESITTER                                    *move-enclosing.nvim-treesitter*
+
+
+This plugin also has `Treesitter` support. In languages with a `Treesitter`
+grammar, the `word` keymap will move the enclosing pair to the end of the next
+`Treesitter` node. This behaviour will not be applied to the `WORD` keymap. It
+can also be disabled for the `word` keymap with the `use_ts` option. There is
+also a function `toggle_ts` exposed through the API to toggle this behavour.
+
+
+------------------------------------------------------------------------------
 INSTALLATION                                *move-enclosing.nvim-installation*
 
 
@@ -41,24 +58,33 @@ package manager:
 >lua
       {
         'AndresYague/move-enclosing.nvim',
+        opts = {},
+      }
+<
+The default options are
+
+>lua
+      {
+        'AndresYague/move-enclosing.nvim',
         opts = {
           word_keymap = '<C-E>', -- Move enclosing to the end of next word
           WORD_keymap = '<C-S-E>', -- Move enclosing to the end of next WORD
+          use_ts = true, -- Whether to use the Treesitter support
         },
       }
 <
-
-------------------------------------------------------------------------------
-CONFIGURATION                              *move-enclosing.nvim-configuration*
-
-
-Right now only `word_keymap` and `WORD_keymap` can be configured. This must be
-an entry in a table passed to `setup`. Such as:
+It can also be initialized through a `setup` call:
 
 >lua
-      require('print-debug').setup {
-        word_keymap = '<C-E>',
-        WORD_keymap = '<C-S-E>',
+      require('move-enclosing').setup {}
+<
+or, with options
+
+>lua
+      require('move-enclosing').setup {
+          word_keymap = '<C-E>', -- Move enclosing to the end of next word
+          WORD_keymap = '<C-S-E>', -- Move enclosing to the end of next WORD
+          use_ts = true, -- Whether to use the Treesitter support
       }
 <
 
