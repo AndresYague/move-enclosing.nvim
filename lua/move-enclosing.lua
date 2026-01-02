@@ -8,7 +8,7 @@ reverse_bracket["}"] = "{"
 reverse_bracket[">"] = "<"
 reverse_bracket['"'] = '"'
 reverse_bracket["'"] = "'"
-reverse_bracket['`'] = '`'
+reverse_bracket["`"] = "`"
 
 ---Move character in "from" to "to"
 ---@param str string String to move characters in
