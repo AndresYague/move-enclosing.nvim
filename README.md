@@ -1,5 +1,7 @@
 # move-enclosing.nvim
 
+## Description
+
 Simple plugin that allows to move enclosing pairs around the next word. For example, with the cursor inside of the parenthesis in `()lorem ipsum` and pressing the mapped keyword, default `<C-E>`, makes the following change to the text:
 
     ()lorem ipsum -> (lorem) ipsum
@@ -24,9 +26,23 @@ If the end of a vim `WORD` is the end of the string and would leave the string u
 
     [()lorem_] -> [(lorem_)]
 
+## Treesitter
+
+This plugin also has `Treesitter` support. In languages with a `Treesitter` grammar, the `word` keymap will move the enclosing pair to the end of the next `Treesitter` node. This behaviour will not be applied to the `WORD` keymap. It can also be disabled for the `word` keymap with the `use_ts` option. There is also a function `toggle_ts` exposed through the API to toggle this behavour.
+
 ## Installation
 
 Install it like any other plugin. For example, if using `LazyVim` as your package manager:
+
+
+```lua
+  {
+    'AndresYague/move-enclosing.nvim',
+    opts = {},
+  }
+```
+
+The default options are
 
 ```lua
   {
@@ -34,18 +50,24 @@ Install it like any other plugin. For example, if using `LazyVim` as your packag
     opts = {
       word_keymap = '<C-E>', -- Move enclosing to the end of next word
       WORD_keymap = '<C-S-E>', -- Move enclosing to the end of next WORD
+      use_ts = true, -- Whether to use the Treesitter support
     },
   }
 ```
 
-## Configuration
-
-Right now only `word_keymap` and `WORD_keymap` can be configured. This must be an entry in a table passed to `setup`. Such as:
+It can also be initialized through a `setup` call:
 
 ```lua
-  require('print-debug').setup {
-    word_keymap = '<C-E>',
-    WORD_keymap = '<C-S-E>',
+  require('move-enclosing').setup {}
+```
+
+or, with options
+
+```lua
+  require('move-enclosing').setup {
+      word_keymap = '<C-E>', -- Move enclosing to the end of next word
+      WORD_keymap = '<C-S-E>', -- Move enclosing to the end of next WORD
+      use_ts = true, -- Whether to use the Treesitter support
   }
 ```
 

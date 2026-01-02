@@ -8,7 +8,7 @@ reverse_bracket["}"] = "{"
 reverse_bracket[">"] = "<"
 reverse_bracket['"'] = '"'
 reverse_bracket["'"] = "'"
-reverse_bracket['`'] = '`'
+reverse_bracket["`"] = "`"
 
 ---Move character in "from" to "to"
 ---@param str string String to move characters in
@@ -247,6 +247,57 @@ local move_match = function(line, position, find_space)
   return nil
 end
 
+local move_closing_ts = function()
+  local cursor = vim.api.nvim_win_get_cursor(0)
+  local cursor_row = cursor[1]
+  local cursor_col = cursor[2]
+  local line = vim.api.nvim_get_current_line()
+  local pos = find_next(line, cursor_col, cursor_col)
+
+  if not pos then
+    return nil
+  end
+
+  local node = vim.treesitter.get_node({
+    pos = { cursor_row - 1, pos },
+    include_anonymous = false,
+  })
+  if node then
+    local row, col = node:end_()
+    if col == pos - 1 then
+      return nil
+    end
+
+    -- Make sure that we do not try to write a character at the end of
+    -- the document
+    local final_row = vim.api.nvim_buf_line_count(0)
+    if row == final_row then
+      return nil
+    end
+
+    -- Rewrite lines by removing the end character from
+    -- the pair and setting it in the new place
+    local char_to_move = line:sub(pos, pos)
+    vim.api.nvim_buf_set_text(
+      0,
+      cursor_row - 1,
+      pos - 1,
+      cursor_row - 1,
+      pos,
+      {}
+    )
+
+    local new_col = col
+    if row == cursor_row - 1 then
+      new_col = new_col - 1
+    end
+    vim.api.nvim_buf_set_text(0, row, new_col, row, new_col, { char_to_move })
+    return col
+  end
+
+  return nil
+end
+
 ---Pattern match different types of closing pair and move them
 ---@param find_space boolean Find space instead of next non-word character
 local move_closing = function(find_space)
@@ -276,8 +327,22 @@ end
 ---@param description string Description of what the map does
 local map = function(lhs, callable, find_space, description)
   vim.keymap.set({ "n", "i" }, lhs, function()
-    callable(find_space)
+    if
+      find_space
+      or not M.use_ts
+      or not vim.treesitter.language.add(vim.bo.filetype)
+    then
+      callable(find_space)
+    else
+      move_closing_ts()
+    end
   end, { desc = "Move parenthesis around next " .. description })
+end
+
+---Toggle whether to use or not treesitter for move-enclosing
+---@return nil
+M.toggle_ts = function()
+  M.use_ts = not M.use_ts
 end
 
 ---@param opts table? Optional configuration table
@@ -285,6 +350,10 @@ M.setup = function(opts)
   opts = opts or {}
   opts.word_keymap = opts.word_keymap or "<C-E>"
   opts.WORD_keymap = opts.WORD_keymap or "<C-S-E>"
+  M.use_ts = opts.use_ts
+  if M.use_ts == nil then
+    M.use_ts = true
+  end
 
   map(opts.word_keymap, move_closing, false, "word")
   map(opts.WORD_keymap, move_closing, true, "WORD")
