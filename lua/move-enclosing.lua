@@ -247,6 +247,50 @@ local move_match = function(line, position, find_space)
   return nil
 end
 
+local move_closing_ts = function()
+  local cursor = vim.api.nvim_win_get_cursor(0)
+  local cursor_row = cursor[1]
+  local cursor_col = cursor[2]
+  local line = vim.api.nvim_get_current_line()
+  local pos = find_next(line, cursor_col, cursor_col)
+
+  if not pos then
+    return nil
+  end
+
+  local node = vim.treesitter.get_node({
+    pos = { cursor_row - 1, pos },
+    include_anonymous = false,
+  })
+  if node then
+    local row, col = node:end_()
+    if col == pos - 1 then
+      return nil
+    end
+
+    -- Rewrite lines by removing the end character from
+    -- the pair and setting it in the new place
+    local char_to_move = line:sub(pos, pos)
+    vim.api.nvim_buf_set_text(
+      0,
+      cursor_row - 1,
+      pos - 1,
+      cursor_row - 1,
+      pos,
+      {}
+    )
+
+    local new_col = col
+    if row == cursor_row - 1 then
+      new_col = new_col - 1
+    end
+    vim.api.nvim_buf_set_text(0, row, new_col, row, new_col, { char_to_move })
+    return col
+  end
+
+  return nil
+end
+
 ---Pattern match different types of closing pair and move them
 ---@param find_space boolean Find space instead of next non-word character
 local move_closing = function(find_space)
@@ -276,7 +320,15 @@ end
 ---@param description string Description of what the map does
 local map = function(lhs, callable, find_space, description)
   vim.keymap.set({ "n", "i" }, lhs, function()
-    callable(find_space)
+    if find_space then
+      callable(find_space)
+    else
+      if vim.treesitter.language.add(vim.bo.filetype) then
+        move_closing_ts()
+      else
+        callable(false)
+      end
+    end
   end, { desc = "Move parenthesis around next " .. description })
 end
 
