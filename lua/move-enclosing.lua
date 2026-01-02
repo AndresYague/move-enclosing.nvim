@@ -249,22 +249,25 @@ end
 
 local move_closing_ts = function()
   local cursor = vim.api.nvim_win_get_cursor(0)
-  local cursor_row = cursor[1]
-  local cursor_col = cursor[2]
+  local cursor_row = cursor[1] - 1 -- The row is 1-indexed, so we correct that here
+  local cursor_col = cursor[2] -- The col is 0-indexed
   local line = vim.api.nvim_get_current_line()
-  local pos = find_next(line, cursor_col, cursor_col)
+  local match_pos = find_next(line, cursor_col, cursor_col)
 
-  if not pos then
+  -- If we are not moving anything, exit already
+  if not match_pos then
     return nil
   end
 
   local node = vim.treesitter.get_node({
-    pos = { cursor_row - 1, pos },
+    pos = { cursor_row, match_pos },
     include_anonymous = false,
   })
   if node then
     local row, col = node:end_()
-    if col == pos - 1 then
+
+    -- If we are not moving anything, exit already
+    if col == match_pos - 1 then
       return nil
     end
 
@@ -277,25 +280,28 @@ local move_closing_ts = function()
 
     -- Rewrite lines by removing the end character from
     -- the pair and setting it in the new place
-    local char_to_move = line:sub(pos, pos)
+
+    -- This saves the character in char_to_move and then removes it from the
+    -- buffer
+    local char_to_move = line:sub(match_pos, match_pos)
     vim.api.nvim_buf_set_text(
       0,
-      cursor_row - 1,
-      pos - 1,
-      cursor_row - 1,
-      pos,
+      cursor_row,
+      match_pos - 1,
+      cursor_row,
+      match_pos,
       {}
     )
 
+    -- This writes the character in the correct position of the buffer. If the
+    -- character is being written in the same line, then we need to adjust for
+    -- the fact that we removed it from somewhere else in the line.
     local new_col = col
-    if row == cursor_row - 1 then
+    if row == cursor_row then
       new_col = new_col - 1
     end
     vim.api.nvim_buf_set_text(0, row, new_col, row, new_col, { char_to_move })
-    return col
   end
-
-  return nil
 end
 
 ---Pattern match different types of closing pair and move them
